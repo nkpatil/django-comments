@@ -1,0 +1,79 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
+<script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+<script src="{% static 'js/popup.js' %}"></script>
+
+<div ng-app="ui.bootstrap.demo" ng-controller="ModalDemoCtrl as $ctrl" class="modal-demo">
+  <script type="text/ng-template" id="myModalContent.html">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Create New Comment</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <!-- Upload form. Note enctype attribute! -->
+        <form action="{% url 'post:index' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>{{ form.non_field_errors }}</p>
+            <p>{{ form.comment.label_tag }}</p>
+            <p>{{ form.comment }}</p>
+            <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
+            <p>
+                {{ form.docfile.errors }}
+                {{ form.docfile }}
+            </p>
+            <p><input type="submit" value="Upload"/></p>
+        </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
+      <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+    </div>
+  </script>
+  <div class="modal-parent"></div>
+
+	<nav class="navbar navbar-inverse">
+		<div class="container-fluid">
+		  <div class="navbar-header">
+		    <a class="navbar-brand" href="#">POST</a>
+		  </div>
+		  <ul class="nav navbar-nav">
+		    <li class="active"><a href="">Home</a></li>
+		    <li><a style="cursor:pointer" ng-click="$ctrl.open('lg')">Create New</a></li>
+		  </ul>
+		  <ul class="nav navbar-nav navbar-right">
+		    <li><a href="#"><span class="glyphicon glyphicon-user"></span> {{ user }}</a></li>
+		    <li><a href="logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
+		  </ul>
+		</div>
+	</nav>
+
+	<div class="container">
+	  <div class="row">
+      <div class="col-sm-8">
+        {% if documents %}
+          {% for document in documents %}
+            <div class="panel panel-white post panel-shadow">
+              <div class="post-description"> 
+                <h4>Comment</h4>
+                <p>{{ document.comment }}</p>
+                <hr/>
+                <h4>Media</h4>
+                <p><!-- List of uploaded documents -->
+                  <a href="{{ document.docfile.url }}">{{ document.docfile.name }}</a>
+                </p>    
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No documents.</p>
+        {% endif %}
+      </div>
+	  </div>
+	</div>
+	
+</div>
