@@ -4,7 +4,7 @@ from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from post.models import UserComments
+from post.models import Comments
 from post.forms import DocumentForm
 
 
@@ -13,14 +13,20 @@ def index(request):
     if request.method == 'POST':
       form = DocumentForm(request.POST, request.FILES)
       if form.is_valid():
-        newdoc = UserComments(docfile=request.FILES['docfile'],\
-                 user=request.user,
-                 comment = request.POST['comment'])
+        newdoc = Comments()
+        if 'image' in request.FILES:
+          newdoc.image=request.FILES['image']
+        if 'video' in request.FILES:
+          newdoc.video=request.FILES['video']
+        if 'date' in request.FILES:
+          newdoc.date=request.POST['date']
+        newdoc.user=request.user
+        newdoc.comment = request.POST['comment']
         newdoc.save()
         return HttpResponseRedirect(reverse('post:index'))
     else:
       form = DocumentForm()
-    documents = UserComments.objects.filter(user=request.user).all()
+    documents = Comments.objects.filter(user=request.user).all().order_by('date').reverse()
     return render(request, 'index.html', {'documents': documents, 'form': form, 'user':request.user})
   else:
 	  username = '-'
@@ -33,7 +39,7 @@ def index(request):
 		  if user is not None:
 			  if user.is_active:
 				  auth.login(request, user)
-				  documents = UserComments.objects.filter(user=user).all()
+				  documents = Comments.objects.filter(user=user).all().order_by('date').reverse()
 				  form = DocumentForm()
 				  return render(request, 'index.html', {'documents': documents, 'form': form, 'user':request.user})
 			  else:

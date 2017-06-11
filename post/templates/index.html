@@ -7,32 +7,48 @@
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
 <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="{% static 'js/popup.js' %}"></script>
+
+<style>
+  .text {
+    display: block;
+    width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+</style>
 
 <div ng-app="ui.bootstrap.demo" ng-controller="ModalDemoCtrl as $ctrl" class="modal-demo">
   <script type="text/ng-template" id="myModalContent.html">
     <div class="modal-header">
       <h3 class="modal-title" id="modal-title">Create New Comment</h3>
     </div>
-    <div class="modal-body" id="modal-body">
-        <!-- Upload form. Note enctype attribute! -->
-        <form action="{% url 'post:index' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <p>{{ form.non_field_errors }}</p>
-            <p>{{ form.comment.label_tag }}</p>
-            <p>{{ form.comment }}</p>
-            <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
-            <p>
-                {{ form.docfile.errors }}
-                {{ form.docfile }}
-            </p>
-            <p><input type="submit" value="Upload"/></p>
-        </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
-      <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
-    </div>
+    <!-- Upload form. Note enctype attribute! -->
+    <form action="{% url 'post:index' %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="modal-body" id="modal-body">
+              <p>{{ form.non_field_errors }}</p>
+              <p>Comments</p>
+              <p>{{ form.comment }} {{ form.comment.errors }}</p>
+              <p>Images</p>
+              <p>
+                  {{ form.image.errors }}
+                  {{ form.image }}
+              </p>
+              <p>Videos</p>
+              <p>
+                  {{ form.video.errors }}
+                  {{ form.video }}
+              </p>
+      </div>
+      <div class="modal-footer">
+        <input class="btn btn-primary" type="submit" value="Upload"/>
+        <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+      </div>
+    </form>
   </script>
   <div class="modal-parent"></div>
 
@@ -52,7 +68,7 @@
 		</div>
 	</nav>
 
-	<div class="container">
+	<!--<div class="container">
 	  <div class="row">
       <div class="col-sm-8">
         {% if documents %}
@@ -63,8 +79,9 @@
                 <p>{{ document.comment }}</p>
                 <hr/>
                 <h4>Media</h4>
-                <p><!-- List of uploaded documents -->
-                  <a href="{{ document.docfile.url }}">{{ document.docfile.name }}</a>
+                <p>
+                  {% if document.image %}<a href="{{ document.image.url }}">{{ document.image.name }}</a>{% endif %}
+                  {% if document.video %}<a href="{{ document.video.url }}">{{ document.video.name }}</a>{% endif %}
                 </p>    
               </div>
             </div>
@@ -74,6 +91,79 @@
         {% endif %}
       </div>
 	  </div>
-	</div>
+	</div>-->
 	
 </div>
+
+<div class="container" ng-app="app" ng-controller="mainController">
+  {% if documents %}
+    {% for document in documents %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne{{ document.id }}">
+            <div class="row">
+              <div class="col-sm-2">
+                {% if document.image %}
+                  <img src="{{ document.image.url }}" style="width:100px; height:100px;" class="img-thumbnail" alt="Thumbnail Image">
+                {% elif document.video %}
+                  <video width="100" height="100" controls>
+                    <source src="/media/documents/2017/06/10/Ok-Jaanu.mp4" type="video/mp4">
+                    Your browser does not support HTML5 video.
+                  </video>
+                {% else %}
+                  <img src="{% static 'img/thumbnail.svg' %}" style="width:100px; height:100px;" class="img-thumbnail" alt="Thumbnail Image">
+                {% endif %}
+              </div>
+              <div class="col-sm-7">
+                <span title="{{ document.comment }}" class="text">{{ document.comment }}</span>
+              </div>
+              <div class="col-sm-3" align="center">
+                <span class="text">{{ document.date }}</span>
+              </div>
+          </a>
+        </h4>
+      </div>
+      <div id="collapseOne{{ document.id }}" class="panel-collapse collapse">
+        <div class="panel-body">
+          <div class="post-description"> 
+            <h4>Comment</h4>
+            <p>{{ document.comment }}</p>
+            <hr/>
+            <h4>Image</h4>
+            <p>
+              {% if document.image %}
+                <a href="{{ document.image.url }}" target="_blank">
+                  <img src="{{ document.image.url }}" style="width:300px;" class="img-thumbnail" alt="Thumbnail Image">
+                </a>
+              {% endif %}
+            </p>
+            <hr/>
+            <h4>Video</h4>
+            <p>
+              {% if document.video %}
+                <video width="300" height="300" controls>
+                  <source src="/media/documents/2017/06/10/Ok-Jaanu.mp4" type="video/mp4">
+                  Your browser does not support HTML5 video.
+                </video>
+              {% endif %}
+            </p>    
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  {% else %}
+    <p>No documents.</p>
+  {% endif %}
+</div>
+
+<script>
+  angular.module('app', [])
+  .controller('mainController', function($scope) {
+    // COLLAPSE =====================
+    /*$scope.isCollapsed = "assessment_topic[sections_attributes][1]";
+    $scope.isCollapsed1 = "assessment_topic[sections_attributes][1]";*/
+    
+  });
+</script>
