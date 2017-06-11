@@ -1,4 +1,21 @@
 angular.module('ui.bootstrap.demo', ['ngAnimate', 'ngSanitize', 'ui.bootstrap']);
+
+angular.module('ui.bootstrap.demo').directive('jqdatepicker', function () {
+      return {
+          restrict: 'A',
+          require: 'ngModel',
+           link: function (scope, element, attrs, ngModelCtrl) {
+              element.datepicker({
+                  dateFormat: 'yy-mm-dd',
+                  onSelect: function (date) {
+                      scope.date = date;
+                      scope.$apply();
+                  }
+              });
+          }
+      };
+  });
+
 angular.module('ui.bootstrap.demo').controller('ModalDemoCtrl', function ($uibModal, $log, $document) {
   var $ctrl = this;
   $ctrl.items = ['item1', 'item2', 'item3'];
