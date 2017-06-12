@@ -16,7 +16,7 @@
 <style>
   .text {
     display: block;
-    width: 300px;
+    width: 400px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -118,12 +118,13 @@
                   <img src="{% static 'img/thumbnail.svg' %}" style="width:100px; height:100px;" class="img-thumbnail" alt="Thumbnail Image">
                 {% endif %}
               </div>
-              <div class="col-sm-7">
+              <div class="col-sm-6">
                 <span title="{{ document.comment }}" class="text">{{ document.comment }}</span>
               </div>
-              <div class="col-sm-3" align="center">
+              <div class="col-sm-4" align="center">
                 <span class="text">{{ document.date }}</span>
               </div>
+            </div>
           </a>
         </h4>
       </div>
