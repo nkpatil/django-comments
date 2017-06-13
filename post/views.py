@@ -7,6 +7,8 @@ from django.template import RequestContext
 from post.models import UserComments
 from post.forms import DocumentForm
 import datetime
+import time
+import json
 
 
 def index(request):
@@ -60,4 +62,12 @@ def logout(request):
 	auth.logout(request)
 	return HttpResponseRedirect(reverse("post:index"))
 
-    
+def get_comments(request):
+  data = UserComments.objects.filter(user=request.user).values().order_by('date')
+  parent_json = {}
+  for i in data:
+  	i['date'] = int(time.mktime(i['date'].timetuple()) * 1000)
+  	parent_json[i['date']] = [i['comment'], i['image'], i['video']]
+  #parent_json['values'] = data
+  return HttpResponse(json.dumps(parent_json), content_type="application/json")
+

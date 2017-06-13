@@ -3,25 +3,21 @@
 <link rel="stylesheet" type="text/css" href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
 <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
 <script src="{% static 'js/popup.js' %}"></script>
-
-<style>
-  .text {
-    display: block;
-    width: 400px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-</style>
 
 <div ng-app="ui.bootstrap.demo" ng-controller="ModalDemoCtrl as $ctrl" class="modal-demo">
   <script type="text/ng-template" id="myModalContent.html">
@@ -70,100 +66,29 @@
 		  </ul>
 		</div>
 	</nav>
-
-	<!--<div class="container">
-	  <div class="row">
-      <div class="col-sm-8">
-        {% if documents %}
-          {% for document in documents %}
-            <div class="panel panel-white post panel-shadow">
-              <div class="post-description"> 
-                <h4>Comment</h4>
-                <p>{{ document.comment }}</p>
-                <hr/>
-                <h4>Media</h4>
-                <p>
-                  {% if document.image %}<a href="{{ document.image.url }}">{{ document.image.name }}</a>{% endif %}
-                  {% if document.video %}<a href="{{ document.video.url }}">{{ document.video.name }}</a>{% endif %}
-                </p>    
-              </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p>No documents.</p>
-        {% endif %}
-      </div>
-	  </div>
-	</div>-->
 	
-</div>
+	<div class="row">
+		<div class="col-sm-9" style="border-right:thick solid #808080">
+			<div id="container" style="height: 100%; min-width: 310px"></div>
+		</div>
+		<div class="col-sm-3">
+			<div>
+				<h4 id="date">  </h4>
+				<h4>Comment</h4>
+				<p id="comment"></p>
+				<hr/>
+				<h4>Image</h4>
+				<p id="image"></p>
+				<hr/>
+				<h4>Video</h4>
+				<p id="video"></p>    
+			</div>
+		</div>
 
-<div class="container" ng-app="app" ng-controller="mainController">
-  {% if documents %}
-    {% for document in documents %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne{{ document.id }}">
-            <div class="row">
-              <div class="col-sm-2">
-                {% if document.image %}
-                  <img src="{{ document.image.url }}" style="width:100px; height:100px;" class="img-thumbnail" alt="Thumbnail Image">
-                {% elif document.video %}
-                  <video width="100" height="100" controls>
-                    <source src="{{ document.video.url }}" type="video/mp4">
-                    Your browser does not support HTML5 video.
-                  </video>
-                {% else %}
-                  <img src="{% static 'img/thumbnail.svg' %}" style="width:100px; height:100px;" class="img-thumbnail" alt="Thumbnail Image">
-                {% endif %}
-              </div>
-              <div class="col-sm-6">
-                <span title="{{ document.comment }}" class="text">{{ document.comment }}</span>
-              </div>
-              <div class="col-sm-4" align="center">
-                <span class="text">{{ document.date }}</span>
-              </div>
-            </div>
-          </a>
-        </h4>
-      </div>
-      <div id="collapseOne{{ document.id }}" class="panel-collapse collapse">
-        <div class="panel-body">
-          <div class="post-description"> 
-            <h4>Comment</h4>
-            <p>{{ document.comment }}</p>
-            <hr/>
-            <h4>Image</h4>
-            <p>
-              {% if document.image %}
-                <a href="{{ document.image.url }}" target="_blank">
-                  <img src="{{ document.image.url }}" style="width:300px;" class="img-thumbnail" alt="Thumbnail Image">
-                </a>
-              {% endif %}
-            </p>
-            <hr/>
-            <h4>Video</h4>
-            <p>
-              {% if document.video %}
-                <video width="300" height="300" controls>
-                  <source src="{{ document.video.url }}" type="video/mp4">
-                  Your browser does not support HTML5 video.
-                </video>
-              {% endif %}
-            </p>    
-          </div>
-        </div>
-      </div>
-    </div>
-  {% endfor %}
-  {% else %}
-    <p>No documents.</p>
-  {% endif %}
 </div>
-
 
 <script>
+	var markers = [];
   var app = angular.module('app', [])
   app.controller('mainController', function($scope) {
     // COLLAPSE =====================
@@ -171,5 +96,108 @@
     $scope.isCollapsed1 = "assessment_topic[sections_attributes][1]";*/
   });
   
+  function GetFormattedDate(dt) {
+    var month = (dt.getMonth() + 1);
+    var day = (dt.getDate());
+    var year = (dt.getFullYear());
+    return year + "-" + month + "-" + day;
+	}
   
+  function fn(tm){
+  	try{
+  		var dt = new Date(tm);
+  		document.getElementById('date').innerHTML = GetFormattedDate(dt);
+			var comment = markers[tm][0];
+			var img = markers[tm][1];
+			var video = markers[tm][2];
+		  document.getElementById('comment').innerHTML = comment;
+		  if(img != ""){
+		  	html = "<a href=\"/media/" + img + "\" target=\"_blank\"><img src=\"/media/" + img + "\" style=\"width:300px;\" class=\"img-thumbnail\" alt=\"Thumbnail Image\"></a>";
+		  	document.getElementById('image').innerHTML = html;
+		  }
+		  else{ document.getElementById('image').innerHTML = ""; }
+		  if(video != ""){
+		  	html = "<video width=\"300\" height=\"300\" controls><source src=\"/media/" + video + "\" type=\"video/mp4\">Your browser does not support HTML5 video.</video>";
+		  	document.getElementById('video').innerHTML = html;
+		  }
+		  else{ document.getElementById('video').innerHTML = ""; }
+		}
+		catch(err){
+			document.getElementById('comment').innerHTML = "";
+			document.getElementById('image').innerHTML = "";
+			document.getElementById('video').innerHTML = "";
+		}
+  }
+  
+  $.ajax({
+		url: 'get_comments',
+		type: 'get',
+		success: function(data) {
+			markers = data;
+			var flags = [];
+			for (var key in data) {
+				var dict = {};
+				dict.x = parseInt(key);
+				dict.title = (data[key][0]).substring(0, 35);
+				flags.push(dict);
+			}
+			show_graph(flags);
+		},
+		failure: function() {
+			alert('Issue downloading comments!');
+		}
+	});
+	
+	function show_graph(flags){
+		$.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=usdeur.json&callback=?', function (data) {
+			  Highcharts.stockChart('container', {
+		      rangeSelector: {
+		          selected: 0
+		      },
+		      title: {
+		          text: 'USD to EUR exchange rate'
+		      },
+		      tooltip: {
+		          style: {
+		              width: '200px'
+		          },
+		          valueDecimals: 4,
+		          shared: true
+		      },
+		      yAxis: {
+		          title: {
+		              text: 'Exchange rate'
+		          }
+		      },
+		      plotOptions: {
+		          series: {
+		              cursor: 'pointer',
+		              point: {
+		                  events: {
+		                      click: function (e) {
+		                          fn(this.x);
+		                      }
+		                  }
+		              },
+		              marker: {
+		                  lineWidth: 1
+		              }
+		          }
+		      },
+		      series: [{
+		          name: 'USD to EUR',
+		          data: data,
+		          id: 'dataseries',
+		      },
+		      {
+		          type: 'flags',
+		          data: flags,
+		          onSeries: 'dataseries',
+		          shape: 'squarepin',
+		          width: 200
+		      }]
+		  });
+		});
+	}
+
 </script>
