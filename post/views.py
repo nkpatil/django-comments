@@ -56,18 +56,43 @@ def index(request):
 			  return render(request, 'login.html', {'error': 'invalid login'})
 	  else:
 		  return render(request, 'login.html', {'error': ''})		
-		
+		  
 
 def logout(request):
 	auth.logout(request)
 	return HttpResponseRedirect(reverse("post:index"))
+
+
+def save_comments(request):
+  if request.method == 'POST':
+    form = DocumentForm(request.POST, request.FILES)
+    if form.is_valid():
+      newdoc = UserComments()
+      if 'image' in request.FILES:
+        newdoc.image = request.FILES['image']
+      if 'video' in request.FILES:
+        newdoc.video = request.FILES['video']
+      if 'date' in request.POST:
+        if request.POST['date'] != "":
+          newdoc.date = request.POST['date']
+        else:
+          newdoc.date = str(datetime.date.today())
+      else:
+        newdoc.date = str(datetime.date.today())
+      newdoc.user = request.user
+      newdoc.comment = request.POST['comment']
+      newdoc.save()
+      return HttpResponse()
+  else:
+    form = DocumentForm()
+
 
 def get_comments(request):
   data = UserComments.objects.filter(user=request.user).values().order_by('date')
   parent_json = {}
   for i in data:
   	i['date'] = int(time.mktime(i['date'].timetuple()) * 1000)
-  	parent_json[i['date']] = [i['comment'], i['image'], i['video']]
+  	parent_json[i['date']] = [i['comment'], i['image'], i['video'], i['id']]
   #parent_json['values'] = data
   return HttpResponse(json.dumps(parent_json), content_type="application/json")
 
