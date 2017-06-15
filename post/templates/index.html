@@ -26,37 +26,8 @@
   }
 </style>
 
-<div ng-app="ui.bootstrap.demo" id="popup_controller" ng-controller="ModalDemoCtrl as $ctrl" class="modal-demo">
-  <script type="text/ng-template" id="myModalContent.html">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modal-title">Create New Comment</h3>
-    </div>
-    <!-- Upload form. Note enctype attribute! -->
-    <form action="{% url 'post:index' %}" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div class="modal-body" id="modal-body">
-              <p>{{ form.non_field_errors }}</p>
-              <p>Comments</p>
-              <p>{{ form.comment }} {{ form.comment.errors }}</p>
-              <p>Date <input id="selectedDate" ng-model="date" type="text" name="date" jqdatepicker /></p>
-              <p>Images</p>
-              <p>
-                  {{ form.image.errors }}
-                  {{ form.image }}
-              </p>
-              <p>Videos</p>
-              <p>
-                  {{ form.video.errors }}
-                  {{ form.video }}
-              </p>
-      </div>
-      <div class="modal-footer">
-        <input class="btn btn-primary" type="submit" value="Upload"/>
-        <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
-      </div>
-    </form>
-  </script>
-  
+<div ng-app="myApp" ng-controller = "myCtrl"> 
+
   <div class="modal-parent"></div>
 	<nav class="navbar navbar-inverse">
 		<div class="container-fluid">
@@ -76,7 +47,33 @@
 	
   <div class="row">
     <div class="col-sm-8" style="border-right:thick solid #808080">
-	    <div id="container" style="height: 100%; min-width: 310px"></div>
+      <div class="row">
+        <div class="panel panel-default">
+          <div style="display:none;" class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-parent="#accordion" href="#collapseOnePost"></a>
+            </h4>
+          </div>
+          <div id="collapseOnePost" class="panel-collapse collapse">
+            <div class="panel-body" style="margin-left:10px;">
+              Date : <input type="text" id="date" name="date" ng-model="comment_date" disabled/>
+              <h3>Comment :</h3>
+              <textarea rows="5" cols="50" name="comment" ng-model="comment"></textarea>
+              <hr/>
+              <h3>Image :</h3>
+              <input type="file" file-image="myImage"/>
+              <hr/>
+              <h3>Video :</h3>
+              <input type="file" file-video="myVideo"/>
+              <hr/>
+              <button ng-click="uploadFile()">upload me</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+	      <div id="container" style="height: 100%; min-width: 310px"></div>
+	    </div>
     </div>
     <div class="col-sm-4">	
 	    <div>
@@ -143,5 +140,70 @@
 		    {% endif %}
 	    </div>
 		</div>
-
 </div>
+
+<script>
+var myApp = angular.module('myApp', []);
+myApp.directive('fileImage', ['$parse', function ($parse) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var model = $parse(attrs.fileImage);
+      var modelSetter = model.assign;
+      element.bind('change', function(){
+        scope.$apply(function(){
+          modelSetter(scope, element[0].files[0]);
+        });
+      });
+    }
+  };
+}]);
+myApp.directive('fileVideo', ['$parse', function ($parse) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var model = $parse(attrs.fileVideo);
+      var modelSetter = model.assign;
+      element.bind('change', function(){
+        scope.$apply(function(){
+          modelSetter(scope, element[0].files[0]);
+        });
+      });
+    }
+  };
+}]);
+
+myApp.service('fileUpload', ['$http', function ($http) {
+  this.uploadFileToUrl = function(comment, date, image, video, uploadUrl){
+    var fd = new FormData();
+    fd.append('comment', comment);
+    fd.append('date', date);
+    fd.append('image', image);
+    fd.append('video', video);
+    $http.post(uploadUrl, fd, {
+        transformRequest: angular.identity,
+        headers: {'Content-Type': undefined}
+    })
+    .then(function (d){
+      alert(d.data);
+      $("#collapseOnePost").removeClass('in');
+    },
+    function (error){
+    
+    });
+  }
+}]);
+
+myApp.controller('myCtrl', ['$scope', 'fileUpload', function($scope, fileUpload){
+  $scope.uploadFile = function(){
+      var image = $scope.myImage;
+      var video = $scope.myVideo;
+      var comment = $scope.comment;
+      var date = $scope.comment_date;
+      var uploadUrl = "save_data";
+      fileUpload.uploadFileToUrl(comment, date, image, video, uploadUrl);
+  };
+    
+}]);
+
+</script>

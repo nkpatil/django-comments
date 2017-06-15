@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext
 from post.models import UserComments
 from post.forms import DocumentForm
@@ -62,29 +63,26 @@ def logout(request):
 	auth.logout(request)
 	return HttpResponseRedirect(reverse("post:index"))
 
-
+@csrf_exempt
 def save_comments(request):
   if request.method == 'POST':
-    form = DocumentForm(request.POST, request.FILES)
-    if form.is_valid():
-      newdoc = UserComments()
-      if 'image' in request.FILES:
-        newdoc.image = request.FILES['image']
-      if 'video' in request.FILES:
-        newdoc.video = request.FILES['video']
-      if 'date' in request.POST:
-        if request.POST['date'] != "":
-          newdoc.date = request.POST['date']
-        else:
-          newdoc.date = str(datetime.date.today())
-      else:
-        newdoc.date = str(datetime.date.today())
-      newdoc.user = request.user
-      newdoc.comment = request.POST['comment']
-      newdoc.save()
-      return HttpResponse()
+    print request.POST
+    print request.FILES
+    user_comments = UserComments()
+    comment = request.POST['comment']
+    date = request.POST['date']
+    print date
+    user_comments.comment = comment
+    user_comments.date = date
+    user_comments.user = request.user
+    if 'image' in request.FILES:
+      user_comments.image = request.FILES['image']
+    if 'video' in request.FILES:
+      user_comments.video = request.FILES['video']
+    user_comments.save()
+    return HttpResponse("Success")
   else:
-    form = DocumentForm()
+    return HttpResponse("Error: Accept only POST request!")
 
 
 def get_comments(request):
