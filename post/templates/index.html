@@ -59,10 +59,10 @@
               <textarea rows="5" cols="50" name="comment" ng-model="comment"></textarea>
               <hr/>
               <h3>Image :</h3>
-              <input type="file" file-image="myImage"/>
+              <input type="file" file-image="myImage" accept="image/*" />
               <hr/>
               <h3>Video :</h3>
-              <input type="file" file-video="myVideo"/>
+              <input type="file" file-video="myVideo" accept="video/mp4 | video/webm | video/ogg" />
               <hr/>
               <button ng-click="uploadFile()">upload me</button>
             </div>
