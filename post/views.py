@@ -71,7 +71,6 @@ def save_comments(request):
     user_comments = UserComments()
     comment = request.POST['comment']
     date = request.POST['date']
-    print date
     user_comments.comment = comment
     user_comments.date = date
     user_comments.user = request.user
@@ -80,17 +79,14 @@ def save_comments(request):
     if 'video' in request.FILES:
       user_comments.video = request.FILES['video']
     user_comments.save()
-    return HttpResponse("Success")
-  else:
-    return HttpResponse("Error: Accept only POST request!")
-
-
-def get_comments(request):
-  data = UserComments.objects.filter(user=request.user).values().order_by('date')
+  data = UserComments.objects.filter(user=request.user).values().order_by('date').reverse()
   parent_json = {}
+  parent_json['comments'] = []
   for i in data:
-  	i['date'] = int(time.mktime(i['date'].timetuple()) * 1000)
-  	parent_json[i['date']] = [i['comment'], i['image'], i['video'], i['id']]
-  #parent_json['values'] = data
+    date = int(time.mktime(i['date'].timetuple()) * 1000)
+    parent_json['comments'].append({'comment': i['comment'], 'date':str(i['date']),\
+  	                               'image':i['image'], 'video':i['video'], 'id':i['id']})
+    parent_json[date] = [i['comment'], i['image'], i['video'], i['id']]
+  print parent_json
   return HttpResponse(json.dumps(parent_json), content_type="application/json")
-
+  

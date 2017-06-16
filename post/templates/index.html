@@ -26,8 +26,7 @@
   }
 </style>
 
-<div ng-app="myApp" ng-controller = "myCtrl"> 
-
+<div ng-app="myApp" ng-controller = "myCtrl">
   <div class="modal-parent"></div>
 	<nav class="navbar navbar-inverse">
 		<div class="container-fluid">
@@ -36,7 +35,6 @@
 		  </div>
 		  <ul class="nav navbar-nav">
 		    <li class="active"><a href="">Home</a></li>
-		    <li><a style="cursor:pointer" id="create_new" ng-click="$ctrl.open('lg')">Create New</a></li>
 		  </ul>
 		  <ul class="nav navbar-nav navbar-right">
 		    <li><a href="#"><span class="glyphicon glyphicon-user"></span> {{ user }}</a></li>
@@ -75,135 +73,56 @@
 	      <div id="container" style="height: 100%; min-width: 310px"></div>
 	    </div>
     </div>
+    
     <div class="col-sm-4">	
 	    <div>
-		    {% if documents %}
-			    {% for document in documents %}
-			    <div class="panel panel-default">
-				    <div class="panel-heading">
-				      <h4 class="panel-title">
-				        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne{{ document.id }}">
-				          <div class="row">
-				            <div class="col-sm-3">
-				              {% if document.image %}
-				                <img src="{{ document.image.url }}" style="width:100px; height:50px;" class="img-thumbnail" alt="Thumbnail Image">
-				              {% elif document.video %}
-				                <video width="100" height="100" controls>
-				                  <source src="{{ document.video.url }}" type="video/mp4">
-				                  Your browser does not support HTML5 video.
-				                </video>
-				              {% else %}
-				                <img src="{% static 'img/thumbnail.svg' %}" style="width:100px; height:50px;" class="img-thumbnail" alt="Thumbnail Image">
-				              {% endif %}
-				            </div>
-				            <div class="col-sm-6">
-				              <span title="{{ document.comment }}" class="text">{{ document.comment }}</span>
-				            </div>
-				            <div class="col-sm-3" align="center">
-				              <span class="text">{{ document.date }}</span>
-				            </div>
-				          </div>
-				        </a>
-				      </h4>
-				    </div>
-				    <div id="collapseOne{{ document.id }}" class="panel-collapse collapse">
-				      <div class="panel-body">
-				        <div class="post-description"> 
-				          <h4>Comment</h4>
-				          <p>{{ document.comment }}</p>
-				          <hr/>
-				          <h4>Image</h4>
-				          <p>
-				            {% if document.image %}
-				              <a href="{{ document.image.url }}" target="_blank">
-				                <img src="{{ document.image.url }}" style="width:300px;" class="img-thumbnail" alt="Thumbnail Image">
-				              </a>
-				            {% endif %}
-				          </p>
-				          <hr/>
-				          <h4>Video</h4>
-				          <p>
-				            {% if document.video %}
-				              <video width="300" height="300" controls>
-				                <source src="{{ document.video.url }}" type="video/mp4">
-				                Your browser does not support HTML5 video.
-				              </video>
-				            {% endif %}
-				          </p>    
-				        </div>
-				      </div>
-				    </div>
+		    <div class="panel panel-default" ng-repeat="x in comments">
+			    <div class="panel-heading">
+			      <h4 class="panel-title">
+			        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne{$ x.id $}">
+			          <div class="row">
+			            <div class="col-sm-3">
+			              <img ng-if="x.image" src="/media/{$ x.image $}" style="width:100px; height:50px;" class="img-thumbnail" alt="Thumbnail Image">
+		                <video ng-if="!x.image && x.video" width="100" height="100" controls>
+		                  <source src="/media/{$ x.video $}" type="video/mp4">
+		                  Your browser does not support HTML5 video.
+		                </video>
+			              <img ng-if="!x.image && !x.video" src="{% static 'img/thumbnail.svg' %}" style="width:100px; height:50px;" class="img-thumbnail" alt="Thumbnail Image">
+			            </div>
+			            <div class="col-sm-6">
+			              <span title="{$ x.comment $}" class="text">{$ x.comment $}</span>
+			            </div>
+			            <div class="col-sm-3" align="center">
+			              <span class="text">{$ x.date $}</span>
+			            </div>
+			          </div>
+			        </a>
+			      </h4>
 			    </div>
-		    {% endfor %}
-		    {% else %}
-			    <p>No documents.</p>
-		    {% endif %}
+			    <div id="collapseOne{$ x.id $}" class="panel-collapse collapse">
+			      <div class="panel-body">
+			        <div class="post-description"> 
+			          <h4>Comment</h4>
+			          <p>{$ x.comment $}</p>
+			          <hr/>
+			          <h4>Image</h4>
+			          <p>
+		              <a ng-if="x.image" href="/media/{$ x.image $}" target="_blank">
+		                <img src="/media/{$ x.image $}" style="width:300px;" class="img-thumbnail" alt="Thumbnail Image">
+		              </a>
+			          </p>
+			          <hr/>
+			          <h4>Video</h4>
+			          <p>
+		              <video ng-if="x.video" width="300" height="300" controls>
+		                <source src="/media/{$ x.video $}" type="video/mp4">
+		                Your browser does not support HTML5 video.
+		              </video>
+			          </p>    
+			        </div>
+			      </div>
+			    </div>
+		    </div>
 	    </div>
 		</div>
 </div>
-
-<script>
-var myApp = angular.module('myApp', []);
-myApp.directive('fileImage', ['$parse', function ($parse) {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var model = $parse(attrs.fileImage);
-      var modelSetter = model.assign;
-      element.bind('change', function(){
-        scope.$apply(function(){
-          modelSetter(scope, element[0].files[0]);
-        });
-      });
-    }
-  };
-}]);
-myApp.directive('fileVideo', ['$parse', function ($parse) {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var model = $parse(attrs.fileVideo);
-      var modelSetter = model.assign;
-      element.bind('change', function(){
-        scope.$apply(function(){
-          modelSetter(scope, element[0].files[0]);
-        });
-      });
-    }
-  };
-}]);
-
-myApp.service('fileUpload', ['$http', function ($http) {
-  this.uploadFileToUrl = function(comment, date, image, video, uploadUrl){
-    var fd = new FormData();
-    fd.append('comment', comment);
-    fd.append('date', date);
-    fd.append('image', image);
-    fd.append('video', video);
-    $http.post(uploadUrl, fd, {
-        transformRequest: angular.identity,
-        headers: {'Content-Type': undefined}
-    })
-    .then(function (d){
-      alert(d.data);
-      $("#collapseOnePost").removeClass('in');
-    },
-    function (error){
-    
-    });
-  }
-}]);
-
-myApp.controller('myCtrl', ['$scope', 'fileUpload', function($scope, fileUpload){
-  $scope.uploadFile = function(){
-      var image = $scope.myImage;
-      var video = $scope.myVideo;
-      var comment = $scope.comment;
-      var date = $scope.comment_date;
-      var uploadUrl = "save_data";
-      fileUpload.uploadFileToUrl(comment, date, image, video, uploadUrl);
-  };
-    
-}]);
-
-</script>
