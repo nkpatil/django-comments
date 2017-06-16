@@ -64,7 +64,7 @@
               <h3>Video :</h3>
               <input type="file" file-video="myVideo" accept="video/mp4 | video/webm | video/ogg" />
               <hr/>
-              <button ng-click="uploadFile()">upload me</button>
+              <button ng-click="uploadFile()" class="btn btn-info">Save Comment</button>
             </div>
           </div>
         </div>
@@ -102,7 +102,14 @@
 			    <div id="collapseOne{$ x.id $}" class="panel-collapse collapse">
 			      <div class="panel-body">
 			        <div class="post-description"> 
-			          <h4>Comment</h4>
+			          <div class="row">
+			            <div class="col-sm-9"><h4>Comment</h4></div>
+			            <div class="col-sm-3">
+			              <button type="button" class="btn btn-default btn-sm" ng-click="deleteRecord(x.id)">
+			                <span class="glyphicon glyphicon-trash"></span> Delete 
+			              </button>
+			            </div>
+			          </div>
 			          <p>{$ x.comment $}</p>
 			          <hr/>
 			          <h4>Image</h4>

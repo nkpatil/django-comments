@@ -169,4 +169,26 @@ myApp.controller('myCtrl', ['$scope', '$http', '$timeout', function($scope, $htt
       alert("error saving the record!");
     });
   };
+  
+  $scope.deleteRecord = function(id){
+    $http.get("delete_record", {params:{'id':id}})
+    .then(function (d){
+      alert("Record deleted successfully!");
+      $scope.comments = d.data['comments'];
+      $scope.markers = d.data;
+      var flags = [];
+		  for (var key in d.data) {
+		    if(key == "comments"){ continue; }
+			  var dict = {};
+			  dict.x = parseInt(key);
+			  dict.title = (d.data[key][0]).substring(0, 35);
+			  flags.push(dict);
+		  }
+		  $scope.show_graph(flags);
+    },
+    function (error){
+      alert("Error while deleting the record!");
+    });
+  }
+  
 }]);

@@ -66,8 +66,6 @@ def logout(request):
 @csrf_exempt
 def save_comments(request):
   if request.method == 'POST':
-    print request.POST
-    print request.FILES
     user_comments = UserComments()
     comment = request.POST['comment']
     date = request.POST['date']
@@ -87,6 +85,21 @@ def save_comments(request):
     parent_json['comments'].append({'comment': i['comment'], 'date':str(i['date']),\
   	                               'image':i['image'], 'video':i['video'], 'id':i['id']})
     parent_json[date] = [i['comment'], i['image'], i['video'], i['id']]
-  print parent_json
+  return HttpResponse(json.dumps(parent_json), content_type="application/json")
+  
+  
+def delete_record(request):
+  comment_id = request.GET.get('id')
+  print comment_id
+  UserComments.objects.get(id=comment_id).delete()
+  data = UserComments.objects.filter(user=request.user).values().order_by('date').reverse()
+  parent_json = {}
+  parent_json['comments'] = []
+  for i in data:
+    date = int(time.mktime(i['date'].timetuple()) * 1000)
+    parent_json['comments'].append({'comment': i['comment'], 'date':str(i['date']),\
+  	                               'image':i['image'], 'video':i['video'], 'id':i['id']})
+    parent_json[date] = [i['comment'], i['image'], i['video'], i['id']]
+  #print parent_json
   return HttpResponse(json.dumps(parent_json), content_type="application/json")
   
