@@ -65,70 +65,48 @@ myApp.controller('myCtrl', ['$scope', '$http', '$timeout', function($scope, $htt
     return year + "-" + month + "-" + day;
   }
   
-  $scope.fn = function(tm){
+  $scope.fun_clicked = function(tm){
     try{
       var id = $scope.markers[tm][3];
       for (var key in $scope.markers) {
         if(key == "comments"){ continue; }
-		    $("#collapseOne" + $scope.markers[key][3]).removeClass('in');
+		    angular.element("#collapseOne" + $scope.markers[key][3]).removeClass("in");
 	    }
-      $("#collapseOne" + id).addClass('in');
-      $("#collapseOnePost").removeClass('in');
+      angular.element("#collapseOne" + id).addClass("in");
+      angular.element("#collapseOnePost").removeClass("in");
     }
     catch(err){
       for (var key in $scope.markers) {
         if(key == "comments"){ continue; }
-		    $("#collapseOne" + $scope.markers[key][3]).removeClass('in');
+		    angular.element("#collapseOne" + $scope.markers[key][3]).removeClass("in");
 	    }
 	    var dt = new Date(tm);
 	    dt = $scope.GetFormattedDate(dt);
-	    $("#date").val(dt).trigger('change');
-      $("#collapseOnePost").addClass('in');
+	    angular.element("#date").val(dt).trigger('change');
+      angular.element("#collapseOnePost").addClass("in");
     }
   }
   
   $scope.show_graph = function(flags){
     $.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=usdeur.json&callback=?', function (data) {
-	      Highcharts.stockChart('container', {
-          rangeSelector: { selected: 0 },
-          title: { text: 'USD to EUR exchange rate' },
-          tooltip: {
-              style: {
-                  width: '200px'
-              },
-              valueDecimals: 4,
-              shared: true
-          },
-          yAxis: {
-              title: {
-                  text: 'Exchange rate'
+	    Highcharts.stockChart('container', {
+        rangeSelector: { selected: 0 },
+        title: { text: 'USD to EUR exchange rate' },
+        tooltip: { style: {width: '200px'}, valueDecimals: 4, shared: true },
+        yAxis: { title: { text: 'Exchange rate' } },
+        plotOptions: {
+          series: {
+            cursor: 'pointer',
+            point: {
+              events: {
+                click: function (e) { $scope.fun_clicked(this.x); }
               }
-          },
-          plotOptions: {
-              series: {
-                  cursor: 'pointer',
-                  point: {
-                      events: {
-                          click: function (e) {
-                              $scope.fn(this.x);
-                          }
-                      }
-                  },
-                  marker: { lineWidth: 1 }
-              }
-          },
-          series: [{
-              name: 'USD to EUR',
-              data: data,
-              id: 'dataseries',
-          },
-          {
-              type: 'flags',
-              data: flags,
-              onSeries: 'dataseries',
-              shape: 'squarepin',
-              width: 200
-          }]
+            },
+            marker: { lineWidth: 1 }
+          }
+        },
+        series: [{ name: 'USD to EUR', data: data, id: 'dataseries' },
+        { type: 'flags', data: flags, onSeries: 'dataseries', shape: 'squarepin', width: 200 }]
       });
     });
   }
@@ -161,7 +139,7 @@ myApp.controller('myCtrl', ['$scope', '$http', '$timeout', function($scope, $htt
 			  dict.title = (d.data[key][0]).substring(0, 35);
 			  flags.push(dict);
 		  }
-		  $("#collapseOnePost").removeClass('in');
+		  angular.element("#collapseOnePost").removeClass("in");
 		  $scope.show_graph(flags);
 		  
     },
